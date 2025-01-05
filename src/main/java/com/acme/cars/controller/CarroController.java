@@ -1,5 +1,6 @@
 package com.acme.cars.controller;
 
+import com.acme.cars.dto.DefaultDTO;
 import com.acme.cars.exception.RecursoNaoEncontradoException;
 import com.acme.cars.model.Carro;
 import com.acme.cars.payload.CriteriaRequest;
@@ -17,30 +18,36 @@ import java.util.List;
 import java.util.Optional;
 
 @RestController  @RequestMapping("/api/carros")
-@RequiredArgsConstructor  @CrossOrigin(origins = "*")
+@RequiredArgsConstructor
+@CrossOrigin(origins = "*", allowedHeaders = "*", exposedHeaders = "*")
 public class CarroController {
+
     private final CarroService carroService;
     private final CsvService csvService;
 
-
     @GetMapping("/search")
     public ResponseEntity<List<Carro>> search(
-            @RequestHeader(value = "modelo", required = false) Optional<String> modelo,
-            @RequestHeader(value = "fabricante", required = false) Optional<String> fabricante,
-            @RequestHeader(value = "pais", required = false) Optional<String> pais) {
+            @RequestParam(value = "modelo", required = false) Optional<String> modelo,
+            @RequestParam(value = "fabricante", required = false) Optional<String> fabricante,
+            @RequestParam(value = "pais", required = false) Optional<String> pais) {
 
-        CriteriaRequest criteriaRequest = new CriteriaRequest(modelo, fabricante,pais);
+        CriteriaRequest criteriaRequest = new CriteriaRequest(modelo, fabricante, pais);
         List<Carro> search = carroService.search(criteriaRequest);
         return ResponseEntity.ok(search);
     }
+
     @GetMapping
-    public ResponseEntity<List<Carro>> listarTodos(@RequestHeader(value = "page", defaultValue = "0") String page,
-                                                   @RequestHeader(value = "size", defaultValue = "10") String size) {
+    public ResponseEntity<List<Carro>> listarTodos(@RequestParam(value = "page", defaultValue = "0") String page,
+                                                   @RequestParam(value = "size", defaultValue = "10") String size) {
         HttpHeaders headers = new HttpHeaders();
         headers.add("X-Total-Count", String.valueOf(carroService.count()));
         List<Carro> allCarros = carroService.getAllPaginado(Integer.parseInt(page), Integer.parseInt(size));
-        return ResponseEntity.ok(allCarros);
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .headers(headers)
+                .body(allCarros);
     }
+
     @GetMapping("/{id}")
     public ResponseEntity<Carro> buscarPorId(@PathVariable Long id) {
         try {
@@ -77,7 +84,7 @@ public class CarroController {
         }
     }
     @GetMapping("/export-cars")
-    public ResponseEntity<FileSystemResource> exportCharacters() {
+    public ResponseEntity<FileSystemResource> exportCars() {
         String filePath = "carros.csv";
         csvService.generate(filePath);
         File file = new File(filePath);
@@ -86,4 +93,44 @@ public class CarroController {
                 .header(HttpHeaders.CONTENT_DISPOSITION,"attachment; filename=" + file.getName())
                 .body(fileSystemResource);
     }
+
+    @GetMapping("/cores")
+    public ResponseEntity<?> getAllColors(){
+        List<DefaultDTO> colors = carroService.getAllDistinctColors();
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("X-Total-Count", String.valueOf(colors.size()));
+
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .headers(headers)
+                .body(colors);
+    }
+
+    @GetMapping("/paises")
+    public ResponseEntity<?> getAllPaises(){
+        List<DefaultDTO> countries = carroService.getAllDistinctCountries();
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("X-Total-Count", String.valueOf(countries.size()));
+
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .headers(headers)
+                .body(countries);
+    }
+
+    @GetMapping("/fabricantes")
+    public ResponseEntity<?> getAllManufacturers(){
+        List<DefaultDTO> manufacturers = carroService.getAllDistinctManufacturers();
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("X-Total-Count", String.valueOf(manufacturers.size()));
+
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .headers(headers)
+                .body(manufacturers);
+    }
+
 }

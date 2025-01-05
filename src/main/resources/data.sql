@@ -148,6 +148,17 @@ INSERT INTO carro (modelo, ano, cor, cavalos_de_potencia, fabricante, pais) VALU
 ('Countryman', 2022, 'Preto', 220, 'Mini', 'Reino Unido');
 
 
+--INSERT INTO countries (name, acronym) VALUES
+--                                            ('Alemanha', 'DEU'),
+--                                            ('Japão', 'JPN'),
+--                                            ('Estados Unidos', 'USA'),
+--                                            ('França', 'FRA'),
+--                                            ('Itália', 'ITA'),
+--                                            ('Coreia do Sul', 'KOR'),
+--                                            ('China', 'CHN'),
+--                                            ('Reino Unido', 'GBR'),
+--                                            ('Índia', 'IND');
+
 
 INSERT INTO usuario (nome, cargo, email, avatar, password) VALUES
                                                                ('Wile E. Coyote', 'Engenheiro de Produtos', 'wile@acme.com', 'https://www.gravatar.com/avatar/89adf1a694e928f9c6da1c1f9b998d1a?s=200', 'senha123'),

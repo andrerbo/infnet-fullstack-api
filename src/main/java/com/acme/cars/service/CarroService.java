@@ -1,6 +1,8 @@
 package com.acme.cars.service;
 
+import com.acme.cars.dto.DefaultDTO;
 import com.acme.cars.exception.RecursoNaoEncontradoException;
+import com.acme.cars.mapper.DefaultMapper;
 import com.acme.cars.model.Carro;
 import com.acme.cars.payload.CriteriaRequest;
 import com.acme.cars.repository.CarroRepository;
@@ -12,27 +14,32 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.text.Normalizer;
 
-@Service@RequiredArgsConstructor
+@Service
+@RequiredArgsConstructor
 public class CarroService {
+
     private final CarroRepository carroRepository;
     private final EntityManager entityManager;
 
     public List<Carro> listarTodos() {
         return carroRepository.findAll();
     }
+
     public Carro buscarPorId(Long id) {
         return carroRepository.findById(id)
                 .orElseThrow(() -> new RecursoNaoEncontradoException("Carro não encontrado com id: " + id));
     }
+
     public Carro salvar(Carro carro) {
         return carroRepository.save(carro);
     }
+
     public void deletar(Long id) {
         carroRepository.findById(id).orElseThrow(() -> new RecursoNaoEncontradoException("Carro não encontrado com id: " + id));
         carroRepository.deleteById(id);
     }
+
     public Carro atualizar(Long id, Carro carroAtualizado) {
         if (!carroRepository.existsById(id)) {
             throw new RecursoNaoEncontradoException("Carro não encontrado com id: " + id);
@@ -40,12 +47,30 @@ public class CarroService {
         carroAtualizado.setId(id);
         return carroRepository.save(carroAtualizado);
     }
+
     public long count(){
         return carroRepository.count();
     }
+
     public List<Carro> getAllPaginado(int page, int size){
         return carroRepository.findAll(PageRequest.of(page, size)).stream().toList();
     }
+
+    public List<DefaultDTO> getAllDistinctColors(){
+        List<String> values = carroRepository.findDistinctByCor();
+        return DefaultMapper.toDefaultDTOList(values);
+    }
+
+    public List<DefaultDTO> getAllDistinctCountries(){
+        List<String> values = carroRepository.findDistinctByPais();
+        return DefaultMapper.toDefaultDTOList(values);
+    }
+
+    public List<DefaultDTO> getAllDistinctManufacturers(){
+        List<String> values = carroRepository.findDistinctByFabricante();
+        return DefaultMapper.toDefaultDTOList(values);
+    }
+
     public List<Carro> search(CriteriaRequest criteriaRequest){
         CriteriaBuilder cb = entityManager.getCriteriaBuilder();
         CriteriaQuery<Carro> cq = cb.createQuery(Carro.class);
@@ -58,6 +83,7 @@ public class CarroService {
         if(criteriaRequest.getFabicante().isPresent()){
             predicates.add(cb.like(cb.lower(carro.get("fabricante")), "%"+criteriaRequest.getFabicante().get().toLowerCase()+"%"));
         }
+
         if(criteriaRequest.getPais().isPresent()){
 
             predicates.add(cb.like(cb.lower(carro.get("pais")), "%"+criteriaRequest.getPais().get().toLowerCase()+"%"));
@@ -65,5 +91,7 @@ public class CarroService {
         cq.where(predicates.toArray(Predicate[]::new));
         return entityManager.createQuery(cq).getResultList();
     }
+
+
 
 }

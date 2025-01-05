@@ -20,14 +20,20 @@ import java.util.Optional;
 @RestController
 @RequestMapping("/api/usuarios")
 @RequiredArgsConstructor
+@CrossOrigin(origins = "*", allowedHeaders = "*", exposedHeaders = "*")
 public class UsuarioController {
+
     private final UsuarioService usuarioService;
+
     private final SecurityService securityService;
+
     private final TokenService tokenService;
+
     @GetMapping
     public ResponseEntity<List<Usuario>> getAllUsuario() {
         return ResponseEntity.ok(usuarioService.findAll());
     }
+
     @PostMapping("/login")
     public ResponseEntity<?> autenticate(@RequestBody AuthUserDTO authUserDTO){
         try{
@@ -38,6 +44,7 @@ public class UsuarioController {
                     .body(Map.of("message", "Usuario ou senha invalidos"));
         }
     }
+
     @GetMapping("/my-profile")
     public ResponseEntity<?> getMyProfile(
             @RequestHeader(value = "authorization", required = true) String token) {
@@ -48,6 +55,5 @@ public class UsuarioController {
         }catch (SignatureVerificationException ex){
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("message", "Not Autorized"));
         }
-
     }
 }
